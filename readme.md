@@ -7,7 +7,6 @@ LKServer is a simple yet powerful Python framework that allows you to expose loc
 ## ✨ Features
 
 - 🌐 **Instant Public URLs** - Get a public URL for your local server in seconds
-- 🔒 **Optional Token System** - Free tier (5h) or token-based (48h) with multiple servers
 - 📁 **Static Files** - Serve static files effortlessly
 - 📝 **Template Engine** - Built-in Jinja2-style templating
 - 🔄 **Redirects** - Easy URL redirection management
@@ -365,7 +364,7 @@ task = app.run_background()
 
 ```python
 app = LKServer(
-    ,           # Port number
+              # Port number
     debug=False,         # Enable debug mode
     name=None,           # Custom server name
     token=None,          # Optional token for extended time
@@ -399,14 +398,42 @@ render_template(template_path, **context)
 ## 🎯 Token System
 
 ### Free Tier (No Token)
-- ⏱️ 5 hours of total usage
-- 🖥️ 1 server at a time
-- 🔄 Resets every 12 hours
+- ⏱️ **5 hours** of total usage
+- 🖥️ **1 server** at a time
+- 🔄 Resets every **12 hours**
 
 ### With Token
-- ⏱️ 48 hours of total usage
-- 🖥️ Up to 3 simultaneous servers
-- 🔄 Resets every 1 hour
+- ⏱️ **48 hours** of total usage
+- 🖥️ Up to **3 simultaneous servers**
+- 🔄 Resets every **1 hour**
+- ⚡ Time consumption multiplier based on active servers:
+  - 1 server active = 1x consumption rate
+  - 2 servers active = 2x consumption rate (each server consumes 2x faster)
+  - 3 servers active = 3x consumption rate (each server consumes 3x faster)
+
+
+### Understanding Time Consumption
+
+When you have multiple servers running simultaneously, time is consumed faster:
+
+```python
+# Example 1: Single server
+app = LKServer(token="your-token")
+# Running for 1 hour consumes 1 hour of time
+
+# Example 2: Two servers simultaneously
+app1 = LKServer(token="your-token")
+app2 = LKServer(token="your-token")
+# Running both for 1 hour consumes 2 hours of time (1h × 2 servers)
+
+# Example 3: Three servers simultaneously
+app1 = LKServer(token="your-token")
+app2 = LKServer(token="your-token") 
+app3 = LKServer(token="your-token")
+# Running all three for 1 hour consumes 3 hours of time (1h × 3 servers)
+```
+
+### Getting a Token
 
 Get your token from the service provider and use it like this:
 
@@ -414,7 +441,9 @@ Get your token from the service provider and use it like this:
 app = LKServer(token="your-token-here")
 ```
 
-## 📁 Project Structure Example
+
+
+## 📁 Project Structure (EXAMPLE)
 
 ```
 your-project/
