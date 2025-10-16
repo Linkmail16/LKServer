@@ -1,11 +1,14 @@
 from setuptools import setup, find_packages
+import os
 
-with open("README.md", "r", encoding="utf-8") as fh:
-    long_description = fh.read()
-
-with open("requirements.txt", "r", encoding="utf-8") as fh:
-    requirements = [line.strip() for line in fh if line.strip() and not line.startswith("#")]
-
+long_description = ""
+if os.path.exists("README.md"):
+    with open("README.md", "r", encoding="utf-8") as fh:
+        long_description = fh.read()
+requirements = ["websockets>=12.0"]
+if os.path.exists("requirements.txt"):
+    with open("requirements.txt", "r", encoding="utf-8") as fh:
+        requireme
 setup(
     name="lkserver",
     version="1.0.0",
