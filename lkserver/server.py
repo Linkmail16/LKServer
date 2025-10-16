@@ -13,71 +13,50 @@ import urllib.request
 import sys
 
 class UpdateChecker:
-  
     
-    UPDATE_URL = "https://geometryamerica.xyz/updates/server.py"
+    
+    UPDATE_URL = "https://geometryamerica.xyz/updates/version.txt"
     VERSION_CHECK_TIMEOUT = 5  
+    CURRENT_VERSION = "1.0.0"
     
     @staticmethod
-    def get_current_file_hash():
-      
-        try:
-            current_file = __file__
-            with open(current_file, 'rb') as f:
-                content = f.read()
-            return hashlib.md5(content).hexdigest()
-        except Exception as e:
-            print(f"Warning: Could not read current file: {e}")
-            return None
-    
-    @staticmethod
-    def get_remote_file_hash():
-      
+    def check_for_updates():
+        
+        print("Checking for updates...", end=" ", flush=True)
+        
         try:
             req = urllib.request.Request(
                 UpdateChecker.UPDATE_URL,
                 headers={'User-Agent': 'LKServer-UpdateChecker/1.0'}
             )
             with urllib.request.urlopen(req, timeout=UpdateChecker.VERSION_CHECK_TIMEOUT) as response:
-                content = response.read()
-            return hashlib.md5(content).hexdigest()
-        except Exception as e:
-            print(f"Warning: Could not check for updates: {e}")
-            return None
-    
-    @staticmethod
-    def check_for_updates():
-      
-        print("Checking for updates...", end=" ", flush=True)
-        
-        current_hash = UpdateChecker.get_current_file_hash()
-        if current_hash is None:
-            print("Failed")
-            return
-        
-        remote_hash = UpdateChecker.get_remote_file_hash()
-        if remote_hash is None:
-            print("Failed")
-            return
-        
-        if current_hash == remote_hash:
-            print("Up to date!")
-            return
-        
-        
-        print("New version available")
-        print("  To update, run:")
-        print()
-        print("     pip install --upgrade --force-reinstall \\")
-        print("       git+https://github.com/Linkmail16/lkserver.git")
-        print()
-        print("  Or if you installed from source:")
-        print()
-        print("     cd lkserver")
-        print("     git pull")
-        print("     pip install -e . --force-reinstall")
-        print()
+                remote_version = response.read().decode('utf-8').strip()
+            
+            if remote_version == UpdateChecker.CURRENT_VERSION:
+                print("Up to date!")
+                return
+            
+            
+            print("New version available!")
+            print()
+            print(f"  Current version: {UpdateChecker.CURRENT_VERSION}")
+            print(f"  Latest version:  {remote_version}")
+            print()
+            print("  To update, run:")
+            print()
+            print("     pip install --upgrade --force-reinstall \\")
+            print("       git+https://github.com/Linkmail16/lkserver.git")
+            print()
+            print("  Or if you installed from source:")
+            print()
+            print("     cd lkserver")
+            print("     git pull")
+            print("     pip install -e . --force-reinstall")
+            print()
 
+            
+        except Exception as e:
+            print(f"Failed")
 
 class Request:
     def __init__(self, data: Dict[str, Any]):
@@ -131,7 +110,7 @@ class Request:
             self._parse_multipart()
     
     def _parse_multipart(self):
-      
+        
         try:
             content_type = self.headers.get('content-type', '')
             boundary = None
@@ -182,11 +161,11 @@ class Request:
             pass
     
     def get_json(self):
-      
+        
         return self.json_data
 
 def send_file(filepath: str, mimetype: str = None, as_attachment: bool = False, attachment_filename: str = None):
-  
+    
     if not os.path.exists(filepath):
         return ('<h1>404 Not Found</h1><p>File not found</p>', 404, {'Content-Type': 'text/html'})
     
@@ -208,7 +187,7 @@ def send_file(filepath: str, mimetype: str = None, as_attachment: bool = False, 
     return (encoded_content, 200, headers, 'base64')
 
 def redirect(location: str, code: int = 302):
-  
+    
     return (
         f'<html><body>Redirecting to <a href="{location}">{location}</a></body></html>',
         code,
@@ -216,7 +195,7 @@ def redirect(location: str, code: int = 302):
     )
 
 def render_template(template_path: str, **context):
-  
+    
     if not os.path.exists(template_path):
         return f'<h1>Template Error</h1><p>Template {template_path} not found</p>'
     
@@ -297,20 +276,20 @@ class LKServer:
         self.blocked_ips.discard(ip)
     
     def add_redirect(self, from_path: str, to_path: str, code: int = 302):
-      
+        
         self.redirects[from_path] = (to_path, code)
         if self.debug:
             print(f"Added redirect: {from_path} -> {to_path} ({code})")
     
     def remove_redirect(self, from_path: str):
-      
+        
         if from_path in self.redirects:
             del self.redirects[from_path]
             if self.debug:
                 print(f"Removed redirect: {from_path}")
     
     def static(self, path: str):
-      
+        
         @self.route(f'{path}/<filename>')
         def serve_static(request):
             filename = request.path.split('/')[-1]
@@ -469,7 +448,7 @@ class LKServer:
                         print(f"\nTip: Get a token for 48 hours and 3 servers!")
                     
                     if time_info.get('active_servers', 0) > 1:
-                        print(f"\nWARNING: You have {time_info['active_servers']} active servers")
+                        print(f"\n⚠️  WARNING: You have {time_info['active_servers']} active servers")
                         print(f"   Time consumption rate: {time_info.get('consumption_rate', 'N/A')}")
                     
                     print(f"{'='*60}\n")
@@ -560,13 +539,13 @@ class LKServer:
             print("\nStopping server...")
     
     async def run_async(self):
-      
+        
         if self.check_updates:
             UpdateChecker.check_for_updates()
         await self._connect()
     
     def run_background(self):
-      
+        
         if self.check_updates:
             UpdateChecker.check_for_updates()
         
