@@ -5,14 +5,16 @@ long_description = ""
 if os.path.exists("README.md"):
     with open("README.md", "r", encoding="utf-8") as fh:
         long_description = fh.read()
+
 requirements = ["websockets>=12.0"]
 if os.path.exists("requirements.txt"):
     with open("requirements.txt", "r", encoding="utf-8") as fh:
-        requireme
+        requirements = [line.strip() for line in fh if line.strip() and not line.startswith("#")]
+
 setup(
     name="lkserver",
     version="1.0.0",
-    author="Linkmail",
+    author="Linkmail16",
     description="Expose your local Python servers to the internet instantly",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -36,7 +38,7 @@ setup(
     install_requires=requirements,
     keywords="server tunnel http websocket ngrok localtunnel expose localhost",
     project_urls={
-        "Bug Reports": "https://github.com/yourusername/lkserver/issues",
-        "Source": "https://github.com/yourusername/lkserver",
+        "Bug Reports": "https://github.com/Linkmail16/lkserver/issues",
+        "Source": "https://github.com/Linkmail16/lkserver",
     },
 )
