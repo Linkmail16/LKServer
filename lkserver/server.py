@@ -437,7 +437,7 @@ class LKServer:
                     if has_token:
                         print(f"\nStatus: WITH TOKEN")
                         print(f"Time remaining: {time_info.get('remaining_formatted', 'N/A')}")
-                        print(f"Reset in: {time_info.get('reset_in', 0)} seconds (1 hour)")
+                        print(f"Reset in: {time_info.get('reset_in', 0)} seconds")
                         print(f"Max servers: 3 simultaneous")
                     else:
                         print(f"\nStatus: FREE (No Token)")
