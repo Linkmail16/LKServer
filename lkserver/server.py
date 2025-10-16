@@ -267,6 +267,7 @@ class LKServer:
         self.template_folder = 'templates'
         self.token = token  
         self.check_updates = check_updates
+        self.keepalive_task = None 
         
     def block_ip(self, ip: str):
         self.blocked_ips.add(ip)
@@ -323,6 +324,18 @@ class LKServer:
     
     def delete(self, path: str):
         return self.route(path, methods=['DELETE'])
+    
+    async def _keepalive_loop(self):
+        """Envía pings cada 30 segundos para mantener la conexión viva"""
+        while self.running and self.ws:
+            try:
+                await asyncio.sleep(30)  
+                if self.ws and self.running:
+                   
+                    await self.ws.ping()
+            except Exception:
+                
+                break
     
     async def _handle_request(self, request_data: Dict[str, Any]) -> Dict[str, Any]:
         request = Request(request_data)
@@ -451,6 +464,10 @@ class LKServer:
                         print(f"   Time consumption rate: {time_info.get('consumption_rate', 'N/A')}")
                     
                     print(f"{'='*60}\n")
+                    
+                    
+                    if not self.keepalive_task:
+                        self.keepalive_task = asyncio.create_task(self._keepalive_loop())
                 
                 elif data['type'] == 'warning':
                     print(f"\n⚠️  {data['message']}")
@@ -487,12 +504,21 @@ class LKServer:
             import traceback
             traceback.print_exc()
             self.running = False
+        finally:
+          
+            if self.keepalive_task:
+                self.keepalive_task.cancel()
+                self.keepalive_task = None
     
     async def _connect(self):
         print("Connecting to server...")
         
         try:
-            async with websockets.connect(self.server_url) as ws:
+            async with websockets.connect(
+                self.server_url,
+                ping_interval=20,  
+                ping_timeout=10   
+            ) as ws:
                 self.ws = ws
                 
                 await ws.send(json.dumps({
@@ -509,6 +535,11 @@ class LKServer:
         except Exception as e:
             print(f"Connection error: {e}")
             self.running = False
+        finally:
+           
+            if self.keepalive_task:
+                self.keepalive_task.cancel()
+                self.keepalive_task = None
     
     def run(self):
         
