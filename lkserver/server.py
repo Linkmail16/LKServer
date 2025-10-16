@@ -18,11 +18,11 @@ class Request:
         self.remote_addr = data.get('remote_addr', 'unknown')
         self.query_string = ''
         
-        # Parse path y query string
+        
         if '?' in self.path:
             self.path, self.query_string = self.full_path.split('?', 1)
         
-        # Parse GET parameters
+        
         self.args = {}
         if self.query_string:
             for param in self.query_string.split('&'):
@@ -30,12 +30,12 @@ class Request:
                     key, value = param.split('=', 1)
                     self.args[unquote(key)] = unquote(value)
         
-        # Parse POST parameters y body
+        
         self.form = {}
         self.json_data = None
         self.files = {}
         
-        # Decode body si está en base64
+        
         if data.get('body_encoding') == 'base64':
             self.raw_body = base64.b64decode(data.get('body', ''))
         else:
@@ -43,7 +43,7 @@ class Request:
         
         self.body = self.raw_body.decode('utf-8', errors='ignore') if self.raw_body else ''
         
-        # Parse según Content-Type
+        
         content_type = self.headers.get('content-type', '').lower()
         
         if 'application/json' in content_type and self.body:
@@ -57,7 +57,7 @@ class Request:
             self.form = {k: v[0] if len(v) == 1 else v for k, v in parsed.items()}
         
         elif 'multipart/form-data' in content_type:
-            # Parseo básico de multipart (simplificado)
+            
             self._parse_multipart()
     
     def _parse_multipart(self):
@@ -75,11 +75,11 @@ class Request:
             
             parts = self.raw_body.split(f'--{boundary}'.encode())
             
-            for part in parts[1:-1]:  # Skip first empty and last closing
+            for part in parts[1:-1]:  
                 if not part.strip():
                     continue
                 
-                # Split headers and content
+                
                 try:
                     header_end = part.find(b'\r\n\r\n')
                     if header_end == -1:
@@ -88,7 +88,7 @@ class Request:
                     headers = part[:header_end].decode('utf-8', errors='ignore')
                     content = part[header_end+4:].rstrip(b'\r\n')
                     
-                    # Extract field name
+                    
                     name = None
                     filename = None
                     for line in headers.split('\r\n'):
@@ -132,7 +132,7 @@ def send_file(filepath: str, mimetype: str = None, as_attachment: bool = False, 
         filename = attachment_filename or os.path.basename(filepath)
         headers['Content-Disposition'] = f'attachment; filename="{filename}"'
     
-    # Encode binary content as base64 for transport
+    
     encoded_content = base64.b64encode(content).decode('utf-8')
     
     return (encoded_content, 200, headers, 'base64')
@@ -153,12 +153,12 @@ def render_template(template_path: str, **context):
     with open(template_path, 'r', encoding='utf-8') as f:
         template = f.read()
     
-    # Reemplazo simple de variables {{ variable }}
+    
     for key, value in context.items():
         template = template.replace('{{ ' + key + ' }}', str(value))
         template = template.replace('{{' + key + '}}', str(value))
     
-    # Loops básicos {% for item in items %}
+    
     import re
     for_pattern = r'\{% for (\w+) in (\w+) %\}(.*?)\{% endfor %\}'
     
@@ -186,7 +186,7 @@ def render_template(template_path: str, **context):
     
     template = re.sub(for_pattern, replace_loop, template, flags=re.DOTALL)
     
-    # Condicionales básicos {% if condition %}
+    
     if_pattern = r'\{% if (\w+) %\}(.*?)\{% endif %\}'
     
     def replace_if(match):
@@ -217,7 +217,7 @@ class LKServer:
         self.security_config = security or {}
         self.static_folder = 'static'
         self.template_folder = 'templates'
-        self.token = token  # 🔑 Token opcional (48h) o None (5h)
+        self.token = token  
         
     def block_ip(self, ip: str):
         self.blocked_ips.add(ip)
@@ -285,7 +285,7 @@ class LKServer:
                 'headers': {'Content-Type': 'text/html'}
             }
         
-        # Check redirects
+        
         if request.path in self.redirects:
             target, code = self.redirects[request.path]
             return {
@@ -318,7 +318,7 @@ class LKServer:
                 else:
                     result = handler()
             
-            # Procesar resultado
+            
             if isinstance(result, dict):
                 return {
                     'status': 200,
