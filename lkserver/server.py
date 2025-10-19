@@ -17,7 +17,7 @@ class UpdateChecker:
     
     UPDATE_URL = "https://geometryamerica.xyz/updates/version.txt"
     VERSION_CHECK_TIMEOUT = 5  
-    CURRENT_VERSION = "1.0.0"
+    CURRENT_VERSION = "1.0.1"
     
     @staticmethod
     def check_for_updates():
@@ -251,8 +251,8 @@ def render_template(template_path: str, **context):
 
 class LKServer:
     def __init__(self, port: int = 7000, debug: bool = False, name: str = None, 
-             security: dict = None, token: str = None, check_updates: bool = True,
-             timeout: int = 300):
+                 security: dict = None, token: str = None, check_updates: bool = True,
+                 timeout: int = 300):
         self.server_url = f'ws://195.35.9.209:{port}/ws'
         self.client_id = str(uuid.uuid4())
         self.name = name
@@ -268,7 +268,8 @@ class LKServer:
         self.template_folder = 'templates'
         self.token = token  
         self.check_updates = check_updates
-        self.keepalive_task = None 
+        self.keepalive_task = None
+        self.timeout = timeout
         
     def block_ip(self, ip: str):
         self.blocked_ips.add(ip)
@@ -327,10 +328,10 @@ class LKServer:
         return self.route(path, methods=['DELETE'])
     
     async def _keepalive_loop(self):
-        """Envía pings cada 30 segundos para mantener la conexión viva"""
+        """Envía pings para mantener la conexión viva"""
         while self.running and self.ws:
             try:
-                await asyncio.sleep(30)  
+                await asyncio.sleep(self.timeout // 10)
                 if self.ws and self.running:
                    
                     await self.ws.ping()
@@ -464,6 +465,7 @@ class LKServer:
                         print(f"\n⚠️  WARNING: You have {time_info['active_servers']} active servers")
                         print(f"   Time consumption rate: {time_info.get('consumption_rate', 'N/A')}")
                     
+                    print(f"Request timeout: {self.timeout} seconds")
                     print(f"{'='*60}\n")
                     
                     
@@ -516,12 +518,12 @@ class LKServer:
         
         try:
             async with websockets.connect(
-    self.server_url,
-    ping_interval=self.timeout // 10,
-    ping_timeout=self.timeout // 15,
-    max_size=10 * 1024 * 1024,
-    close_timeout=self.timeout
-) as ws:
+                self.server_url,
+                ping_interval=self.timeout // 10,
+                ping_timeout=self.timeout // 15,
+                max_size=10 * 1024 * 1024,
+                close_timeout=self.timeout
+            ) as ws:
                 self.ws = ws
                 
                 await ws.send(json.dumps({
