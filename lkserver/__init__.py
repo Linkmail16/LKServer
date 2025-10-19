@@ -7,7 +7,7 @@ Perfect for testing webhooks, sharing demos, or accessing local services remotel
 
 from .server import LKServer, Request, send_file, redirect, render_template
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 __author__ = "Linkmail16"
 __all__ = ["LKServer", "Request", "send_file", "redirect", "render_template"]
 
