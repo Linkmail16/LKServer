@@ -13,7 +13,7 @@ if os.path.exists("requirements.txt"):
 
 setup(
     name="lkserver",
-    version="1.0.0",
+    version="1.0.1",
     author="Linkmail16",
     description="Expose your local Python servers to the internet instantly",
     long_description=long_description,
