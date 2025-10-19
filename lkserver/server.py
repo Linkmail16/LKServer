@@ -251,7 +251,8 @@ def render_template(template_path: str, **context):
 
 class LKServer:
     def __init__(self, port: int = 7000, debug: bool = False, name: str = None, 
-                 security: dict = None, token: str = None, check_updates: bool = True):
+             security: dict = None, token: str = None, check_updates: bool = True,
+             timeout: int = 300):
         self.server_url = f'ws://195.35.9.209:{port}/ws'
         self.client_id = str(uuid.uuid4())
         self.name = name
