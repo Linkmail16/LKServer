@@ -516,10 +516,12 @@ class LKServer:
         
         try:
             async with websockets.connect(
-                self.server_url,
-                ping_interval=20,  
-                ping_timeout=10   
-            ) as ws:
+    self.server_url,
+    ping_interval=self.timeout // 10,
+    ping_timeout=self.timeout // 15,
+    max_size=10 * 1024 * 1024,
+    close_timeout=self.timeout
+) as ws:
                 self.ws = ws
                 
                 await ws.send(json.dumps({
